@@ -1,5 +1,9 @@
 // 定义前后端数据契约并封装 JSON 请求、超时与错误提示；不修改游戏规则。
 import type { World, NpcId, PlaceId } from './world';
+
+export const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
 export type Activity = 'seek_company' | 'rest' | 'read' | 'chat' | 'work' | 'repair_bench' | 'sit_bench' | 'prepare_talk' | 'host_talk' | 'attend_talk' | 'invite_event' | 'run_event' | 'join_event';
 export interface DialogueTrace { source: 'ai' | 'rules'; input: string; reply: string; thought: string; intent: string; effects: {energy: number; mood: number; social: number}; effect_summary: string; fallback_reason: string; validation?: string; memory_ids: string[] }
 export interface Invitation { id:string; group:string; event:string; sender:NpcId; recipient:NpcId; place:PlaceId; due_turn:number; expires_turn:number; status:string; response_source:string; response_reason:string; result:string }
@@ -19,9 +23,24 @@ export interface Movement { npc_id: NpcId; from_place_id: PlaceId; to_place_id: 
 export interface BenchEvent { id: string; discovered: boolean; status: 'broken' | 'repairing' | 'repaired'; progress: number; required: number; assigned_npc_id: NpcId | null; completed_turn: number | null }
 export interface Expression { id: string; npc_id: NpcId; emotion: 'pleased' | 'hesitant' | 'happy' | 'warm'; reason: string; source: 'player' | 'npc' }
 export interface Reply { outcome?: 'accepted' | 'declined'; reason?: string; message?: string; expressions?: Expression[]; dialogue?: DialogueTrace; comparison?: {mock: string; ai: string} }
+
 export async function api<T>(path: string, body?: unknown, method?: 'DELETE'): Promise<T> {
- const response = await fetch(`/api${path}`, { method: method ?? (body === undefined ? 'GET' : 'POST'), headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(125000) });
- const data = await response.json();
- if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '请求参数不符合规则，请检查后重试。');
- return data as T;
+  const response = await fetch(`${API_BASE_URL}/api${path}`, {
+    method: method ?? (body === undefined ? 'GET' : 'POST'),
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(125000),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data.detail === 'string'
+        ? data.detail
+        : '请求参数不符合规则，请检查后重试。',
+    );
+  }
+
+  return data as T;
 }

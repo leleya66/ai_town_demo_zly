@@ -1,8 +1,12 @@
 """FastAPI 入口：声明接口并把请求交给世界服务、建议决策和回合结算模块。"""
+import os
 import sqlite3
 from copy import deepcopy
 from uuid import uuid4
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend import storage
 from backend.models import Command, Suggestion, LegacyCommand, AiMode, Support
 from backend.festival import support
@@ -14,7 +18,27 @@ from backend.simulation import advance_world
 from backend.commands import execute_command
 from backend.streaming import response as stream_response
 
+
 app = FastAPI(title='AI 小镇 · 规则建议与回合 API')
+
+# 本地开发默认允许 Vite；Render/生产环境通过 CORS_ORIGINS 增加正式前端域名。
+# 例如：CORS_ORIGINS=https://ai-town-web-zly.onrender.com
+cors_origins = [
+    origin.strip().rstrip('/')
+    for origin in os.getenv(
+        'CORS_ORIGINS',
+        'http://127.0.0.1:5174,http://localhost:5174',
+    ).split(',')
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 @app.post('/api/worlds/{world_id}/commands/stream')
@@ -25,6 +49,7 @@ def command_stream(world_id: str, cmd: LegacyCommand):
 @app.post('/api/worlds/{world_id}/turns/stream')
 def turn_stream(world_id: str, cmd: Command):
     return stream_response(lambda: mutate(world_id, cmd, advance_world, 'turn'))
+
 
 @app.get('/api/health')
 def health():
@@ -68,7 +93,7 @@ def ai_mode(world_id: str, cmd: AiMode):
 
 @app.post('/api/worlds/{world_id}/support')
 def choose_support(world_id: str, cmd: Support):
-    return mutate(world_id,cmd,lambda world: support(world,cmd.npc_id),'support')
+    return mutate(world_id, cmd, lambda world: support(world, cmd.npc_id), 'support')
 
 
 @app.post('/api/worlds/{world_id}/comparisons')
@@ -76,15 +101,16 @@ def compare(world_id: str, cmd: Command):
     # 从同一快照复制独立世界；不重置原世界、不读取或覆盖存档。重复请求返回原对照ID。
     def fork(world):
         ids = {}
-        for mode in ('mock','ai'):
+        for mode in ('mock', 'ai'):
             key = str(uuid4())
             branch = deepcopy(world)
-            branch.update(world_id=key,revision=0,ai_enabled=mode=='ai')
+            branch.update(world_id=key, revision=0, ai_enabled=mode == 'ai')
             enrich(branch)
-            worlds[key] = dict(world=branch,requests={})
+            worlds[key] = dict(world=branch, requests={})
             ids[mode] = key
-        return dict(message='已创建同起点的两个独立世界；原世界保留。',comparison=ids)
-    return mutate(world_id,cmd,fork,'comparison')
+        return dict(message='已创建同起点的两个独立世界；原世界保留。', comparison=ids)
+
+    return mutate(world_id, cmd, fork, 'comparison')
 
 
 @app.post('/api/worlds/{world_id}/commands')
