@@ -1,0 +1,32 @@
+{
+  "name": "ai-town-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vue-tsc --noEmit && vite build",
+    "test": "node --experimental-strip-types --test tests/world.test.ts tests/movement.test.ts tests/stream.test.ts",
+    "test:browser": "node tests/browser.cjs",
+    "test:suggestions": "node tests/suggestions.cjs",
+    "test:bench": "node tests/bench.cjs",
+    "test:expressions": "node tests/expressions.cjs",
+    "test:saves": "node tests/saves.cjs",
+    "test:agenda": "node tests/agenda.cjs",
+    "test:endings": "node tests/endings.cjs",
+    "test:autonomy": "node tests/autonomy.cjs",
+    "test:invitations": "node tests/invitations.cjs"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.45.0",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "@vitejs/plugin-vue": "*",
+    "playwright": "^1.63.0",
+    "typescript": "^5.9.3",
+    "vite": "*",
+    "vue-tsc": "*"
+  }
+}

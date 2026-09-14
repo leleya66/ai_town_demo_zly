@@ -1,0 +1,27 @@
+// 定义前后端数据契约并封装 JSON 请求、超时与错误提示；不修改游戏规则。
+import type { World, NpcId, PlaceId } from './world';
+export type Activity = 'seek_company' | 'rest' | 'read' | 'chat' | 'work' | 'repair_bench' | 'sit_bench' | 'prepare_talk' | 'host_talk' | 'attend_talk' | 'invite_event' | 'run_event' | 'join_event';
+export interface DialogueTrace { source: 'ai' | 'rules'; input: string; reply: string; thought: string; intent: string; effects: {energy: number; mood: number; social: number}; effect_summary: string; fallback_reason: string; validation?: string; memory_ids: string[] }
+export interface Invitation { id:string; group:string; event:string; sender:NpcId; recipient:NpcId; place:PlaceId; due_turn:number; expires_turn:number; status:string; response_source:string; response_reason:string; result:string }
+export interface EventCard { id:string; owner:NpcId; title:string; description:string; stage:string; score:number; completed:boolean; invitations:Invitation[] }
+export interface Festival { cards?:EventCard[]; total_score?:number; supported_npc_id: NpcId | null; prepared_by: NpcId[]; talk_completed: boolean; success: boolean; winners: NpcId[]; goals: {bench: boolean; talk: boolean; exchange?: boolean; care?:boolean; listen?:boolean}; ranking: {npc_id: NpcId; name: string; score: number}[]; ledger: {npc_id: NpcId; key: string; turn: number; points: number; reason: string}[] }
+export interface AiStatus { enabled: boolean; available: boolean; model: string; status: 'mock' | 'ready' | 'unavailable'; last_decision: BenchIntention['commitment_decision'] | null }
+export interface BenchIntention { awaiting_ai?: boolean; id: string; source_memory_id: string; source_turn: number; status: 'pending' | 'deferred' | 'in_progress' | 'completed' | 'invalid' | 'declined'; reason: string; outcome: string; origin: string; agenda_item_id: string | null; commitment_decision?: { source: 'ai' | 'rules'; choice: 'accept' | 'decline' | 'defer'; reason: string; model?: string; memory_ids: string[]; fallback_reason: string } }
+export interface SocialMemory { id: string; turn: number; partner_id: NpcId; topic: 'care' | 'experience' | 'greeting'; topic_label: string; source: 'rules'; place_id: PlaceId; facts: Record<string, string | number>; dialogue: string }
+export interface Decision { npc_id: NpcId; activity: Activity; target_place_id: PlaceId; target_npc_id: NpcId | null; reason: string; source: 'rules' | 'ai'; thought?: string; fallback_reason?: string; agenda_item_id: string | null; related_memory_ids: string[] }
+export interface Result { npc_id: NpcId; agenda_item_id: string | null; activity: Activity; from_place_id: PlaceId; to_place_id: PlaceId; status: string; effects: { energy: number; mood: number; social: number }; notes: string[] }
+export type BackendWorld = Omit<World, 'npcs'> & { world_id: string; invitations?:Invitation[]; ai: AiStatus; festival: Festival; assessment: Assessment; rules_version: number; max_turns: number | null; phase: 'playing' | 'ended'; ending: Ending | null; revision: number; interventions_remaining: number; bench_event: BenchEvent; last_movements: Movement[]; activity_rules: Record<Activity, {label: string; places: PlaceId[]; suggestible: boolean; effects: Result['effects']}>; last_decisions: Decision[]; last_results: Result[]; npcs: (World['npcs'][number] & { last_dialogue?: DialogueTrace; bench_intention?: BenchIntention; social_memories?: SocialMemory[]; position: Point; agenda: AgendaItem[]; agenda_preview: Decision | null })[] };
+export interface Assessment { status: string; reason: string; warnings: string[]; experiences: string[]; quiet_residents: string[]; chat_count: number | null; bench_repaired: boolean; ending_title: string; ending_reason: string }
+export interface Ending { festival?: Festival; assessment?: Assessment; id: string; title: string; reason: string; turn: number; residents: {npc_id: NpcId; name: string; energy: number; mood: number; social: number; text: string}[]; bench_repaired: boolean; chat_count: number | null }
+export interface AgendaItem { id: string; activity: Activity; target_place_id: PlaceId; status: 'pending' | 'in_progress' | 'deferred'; started: boolean; accepted_turn: number | null; expires_at_turn: number | null; defer_reason: string }
+export type Point = [number, number];
+export interface Movement { npc_id: NpcId; from_place_id: PlaceId; to_place_id: PlaceId; points: Point[]; duration_ms: number }
+export interface BenchEvent { id: string; discovered: boolean; status: 'broken' | 'repairing' | 'repaired'; progress: number; required: number; assigned_npc_id: NpcId | null; completed_turn: number | null }
+export interface Expression { id: string; npc_id: NpcId; emotion: 'pleased' | 'hesitant' | 'happy' | 'warm'; reason: string; source: 'player' | 'npc' }
+export interface Reply { outcome?: 'accepted' | 'declined'; reason?: string; message?: string; expressions?: Expression[]; dialogue?: DialogueTrace; comparison?: {mock: string; ai: string} }
+export async function api<T>(path: string, body?: unknown, method?: 'DELETE'): Promise<T> {
+ const response = await fetch(`/api${path}`, { method: method ?? (body === undefined ? 'GET' : 'POST'), headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(125000) });
+ const data = await response.json();
+ if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '请求参数不符合规则，请检查后重试。');
+ return data as T;
+}

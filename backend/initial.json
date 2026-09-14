@@ -1,0 +1,210 @@
+{
+  "world": {
+    "version": 1,
+    "turn": 3,
+    "npcs": [
+      {
+        "id": "joe",
+        "name": "Joe",
+        "personality": "乐观",
+        "subtitle": "外向活跃",
+        "place": "plaza",
+        "energy": 78,
+        "mood": 82,
+        "social": 75,
+        "action": "与街坊闲聊",
+        "reason": "广场的热闹总让我精神十足。你也来坐一会儿吧！",
+        "memory": [],
+        "messages": [
+          {
+            "role": "npc",
+            "text": "广场的热闹总让我精神十足。你也来坐一会儿吧！",
+            "turn": 3
+          }
+        ],
+        "rest": false
+      },
+      {
+        "id": "wise",
+        "name": "Wise",
+        "personality": "睿智",
+        "subtitle": "内敛思考",
+        "place": "library",
+        "energy": 62,
+        "mood": 88,
+        "social": 28,
+        "action": "阅读旧书",
+        "reason": "这本书里还有些问题值得想一想，安静的环境正合适。",
+        "memory": [],
+        "messages": [
+          {
+            "role": "npc",
+            "text": "这本书里还有些问题值得想一想，安静的环境正合适。",
+            "turn": 3
+          }
+        ],
+        "rest": false
+      },
+      {
+        "id": "calm",
+        "name": "Calm",
+        "personality": "温柔",
+        "subtitle": "善于倾听",
+        "place": "forest",
+        "energy": 85,
+        "mood": 76,
+        "social": 40,
+        "action": "林间散步",
+        "reason": "风很轻，树影也很好看。慢慢走就能放松下来。",
+        "memory": [],
+        "messages": [
+          {
+            "role": "npc",
+            "text": "风很轻，树影也很好看。慢慢走就能放松下来。",
+            "turn": 3
+          }
+        ],
+        "rest": false
+      },
+      {
+        "id": "stead",
+        "name": "Stead",
+        "personality": "坚毅",
+        "subtitle": "专注可靠",
+        "place": "workshop",
+        "energy": 91,
+        "mood": 83,
+        "social": 55,
+        "action": "修缮木椅",
+        "reason": "这把椅子还差最后一道打磨，完成它会让我踏实。",
+        "memory": [],
+        "messages": [
+          {
+            "role": "npc",
+            "text": "这把椅子还差最后一道打磨，完成它会让我踏实。",
+            "turn": 3
+          }
+        ],
+        "rest": false
+      }
+    ],
+    "events": [
+      {
+        "turn": 3,
+        "npc": "stead",
+        "text": "Stead 在工坊整理好了一套工具，开始修缮木椅。"
+      },
+      {
+        "turn": 3,
+        "npc": "joe",
+        "text": "Joe 在广场听到一段趣闻，笑着邀请邻居坐下。"
+      },
+      {
+        "turn": 2,
+        "npc": "wise",
+        "text": "Wise 从书架上找到一本旧笔记。"
+      },
+      {
+        "turn": 2,
+        "npc": "calm",
+        "text": "Calm 沿林间小路散步，享受清晨的宁静。"
+      }
+    ],
+    "tasks": [
+      false,
+      false,
+      false
+    ]
+  },
+  "places": {
+    "forest": {
+      "name": "林间",
+      "subtitle": "放松 · 自然 · 日常",
+      "desc": "沿着树影斑驳的小径缓缓走去，风声和鸟鸣会接住未说出口的心事。这里适合独处，也容得下安静的陪伴。",
+      "effects": {
+        "energy": 15,
+        "mood": 5,
+        "social": -4
+      },
+      "actions": [
+        "林间散步",
+        "静坐休憩",
+        "观察自然"
+      ],
+      "limits": [
+        "密集社交",
+        "喧闹活动"
+      ],
+      "x": 20,
+      "y": 28,
+      "image": "forest"
+    },
+    "library": {
+      "name": "图书馆",
+      "subtitle": "阅读 · 思考 · 沉淀",
+      "desc": "旧书页散发着淡淡的木香。有人寻找答案，有人只是想安静地度过一个下午。请放轻脚步，留一点空间给思考。",
+      "effects": {
+        "energy": 5,
+        "mood": 4,
+        "social": -6
+      },
+      "actions": [
+        "阅读典籍",
+        "伏案记录",
+        "安静休整"
+      ],
+      "limits": [
+        "大声闲聊",
+        "聚众喧哗"
+      ],
+      "x": 58,
+      "y": 34,
+      "image": "library"
+    },
+    "plaza": {
+      "name": "中心广场",
+      "subtitle": "社交 · 活动 · 市井",
+      "desc": "这里是小镇的核心区域，商贩、旅人、居民汇聚于此。人们在这里聊天、交易、分享消息，生活的烟火气从不消散。",
+      "effects": {
+        "energy": -8,
+        "mood": 5,
+        "social": 12
+      },
+      "actions": [
+        "闲聊",
+        "结伴观望",
+        "主动搭话",
+        "人群互动"
+      ],
+      "limits": [
+        "深度思考",
+        "沉浸式阅读"
+      ],
+      "x": 41,
+      "y": 58,
+      "image": "plaza"
+    },
+    "workshop": {
+      "name": "老旧工坊",
+      "subtitle": "劳作 · 专注 · 效率",
+      "desc": "木屑落在午后的光里，锤子的轻响为小镇打着节拍。一把修好的椅子、一件趁手的工具，都是认真生活的证明。",
+      "effects": {
+        "energy": -10,
+        "mood": 4,
+        "social": -5
+      },
+      "actions": [
+        "修缮物件",
+        "整理器具",
+        "专注打磨"
+      ],
+      "limits": [
+        "频繁打扰",
+        "无意义闲聊"
+      ],
+      "x": 78,
+      "y": 78,
+      "image": "workshop"
+    }
+  }
+}
